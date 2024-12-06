@@ -222,15 +222,21 @@ const refreshToken = async (req, res) => {
 const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
+    console.log(email)
 
     if (!email || typeof email !== 'string') {
       return res.status(400).json({ message: 'L\'adresse e-mail est invalide.' });
     }
 
+    const normalizedEmail = email.trim().toLowerCase();
+
     // Vérifier si l'utilisateur existe
-    const user = await User.findOne({ email: email.trim() });
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
-      return res.status(404).json({ message: 'Utilisateur non trouvé.' });
+      // Message générique pour protéger les informations sur les utilisateurs
+      return res.status(200).json({
+        message: 'Un e-mail de réinitialisation a été envoyé à votre adresse e-mail si elle est enregistrée.',
+      });
     }
 
     // Générer un token de réinitialisation sécurisé
@@ -256,15 +262,22 @@ const forgotPassword = async (req, res) => {
         <p>Cliquez sur le lien ci-dessous pour réinitialiser votre mot de passe :</p>
         <a href="${resetLink}" target="_blank">${resetLink}</a>
         <p>Ce lien est valable pendant 1 heure.</p>
-        <p>Si vous n'avez pas demandé cette réinitialisation, veuillez ignorer cet e-mail.</p>
+        <p>Si vous n'avez pas demandé cette réinitialisation ou si vous avez des problèmes, contactez notre support à <a href="mailto:support@example.com">support@example.com</a>.</p>
       `,
     };
 
     // Envoyer l'e-mail de réinitialisation
-    await transporter.sendMail(mailOptions);
+    try {
+      await transporter.sendMail(mailOptions);
+    } catch (emailError) {
+      console.error('Erreur lors de l\'envoi de l\'e-mail:', emailError);
+      return res.status(500).json({
+        message: 'Une erreur est survenue lors de l\'envoi de l\'e-mail de réinitialisation.',
+      });
+    }
 
     res.status(200).json({
-      message: 'Un e-mail de réinitialisation a été envoyé à votre adresse e-mail.',
+      message: 'Un e-mail de réinitialisation a été envoyé à votre adresse e-mail si elle est enregistrée.',
     });
   } catch (error) {
     console.error('Erreur lors de la demande de réinitialisation:', error);
@@ -274,10 +287,13 @@ const forgotPassword = async (req, res) => {
   }
 };
 
+
 const resetPassword = async (req, res) => {
   try {
     const { token } = req.params;
     const { password } = req.body;
+
+    console.log(token, password)
 
     if (!token || !password) {
       return res.status(400).json({ message: 'Token ou mot de passe manquant.' });

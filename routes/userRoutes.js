@@ -22,9 +22,11 @@ router.post('/refresh-token', refreshToken);
 // Cette route permet de déconnecter un utilisateur via une requête POST
 router.post('/logout', logoutUser);
 
+
+
 // Route pour réinitialiser le mot de passe d'un utilisateur
 // Cette route permet de réinitialiser le mot de passe via une requête POST
-router.post('/reset-password', resetPassword);
+router.post('/reset-password/:token', resetPassword);
 
 // Route pour demander la réinitialisation du mot de passe
 // Cette route permet à l'utilisateur de demander un e-mail pour réinitialiser son mot de passe via une requête POST
