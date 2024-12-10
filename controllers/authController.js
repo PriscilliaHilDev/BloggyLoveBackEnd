@@ -4,6 +4,7 @@ const User = require('../models/User');
 const { OAuth2Client } = require('google-auth-library');
 const crypto = require('crypto');
 const transporter = require('../config/nodemailer'); // Assure-toi que tu as configuré ton Nodemailer pour Outlook
+const mongoose = require('mongoose');
 
 
 const client = new OAuth2Client(`${process.env.GOOGLE_OAUTH_APP_GUID}.apps.googleusercontent.com`);
@@ -79,40 +80,38 @@ const googleLogin = async (req, res) => {
 const registerUser = async (req, res) => {
   const { name, email, password } = req.body;
 
-  console.log('Données reçues:', req.body); // Vérifie que les données arrivent correctement
-
   try {
     // Vérification si l'utilisateur existe déjà
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      console.log('Utilisateur déjà existant');
       return res.status(400).json({ message: 'Cet email est déjà utilisé' });
     }
 
     // Hash du mot de passe
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 12); // Utilisation d'un "cost factor" plus élevé
 
-    // Génération du refreshToken
-    const refreshToken = jwt.sign({ userId: email }, process.env.JWT_SECRET, { expiresIn: '7d' });
-
-    // Création du nouvel utilisateur avec les champs nécessaires, incluant le refreshToken
+    // Création du nouvel utilisateur avec les champs nécessaires
     const newUser = new User({
       name,
       email,
       password: hashedPassword,
-      googleId: null,  // Valeur par défaut
-      picture: null,   // Valeur par défaut
-      refreshToken : refreshToken,    // Ajouter directement le refreshToken
-      resetPasswordToken: null,  // Valeur par défaut
-      resetPasswordExpires: null,  // Valeur par défaut
+      googleId: null,
+      picture: null,
+      refreshToken: null,  // Pas encore de refreshToken ici
     });
 
-    // Sauvegarde du nouvel utilisateur dans la base de données
+    // Sauvegarde du nouvel utilisateur
     await newUser.save();
-    console.log('Utilisateur enregistré:', newUser);
 
     // Génération de l'accessToken
     const accessToken = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    // Génération du refreshToken
+    const refreshToken = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+    // Sauvegarder le refreshToken dans la base de données
+    newUser.refreshToken = refreshToken;
+    await newUser.save();
 
     // Réponse avec les tokens et les informations utilisateur
     res.json({
@@ -124,13 +123,14 @@ const registerUser = async (req, res) => {
       user: {
         name: newUser.name,
         email: newUser.email,
+        id:newUser._id
       },
     });
   } catch (error) {
-    console.error('Erreur lors de l\'enregistrement:', error);
     res.status(500).json({ message: 'Erreur serveur', error: error.message });
   }
 };
+
 
 // Fonction pour connecter un utilisateur
 const loginUser = async (req, res) => {
@@ -174,6 +174,7 @@ const loginUser = async (req, res) => {
           user: {
               name: user.name, // Ajouter le nom de l'utilisateur si tu veux l'envoyer
               email: user.email,
+              id:user._id
           },
       });
   } catch (error) {
@@ -323,10 +324,20 @@ const resetPassword = async (req, res) => {
 };
 
 const logoutUser = async (req, res) => {
-  const { userId } = req.body; 
+  const { userId } = req.body;
 
   try {
-    // Trouver l'utilisateur et révoquer le refresh token
+    // Vérifier si l'ID utilisateur est fourni
+    if (!userId) {
+      return res.status(400).json({ message: 'ID utilisateur manquant' });
+    }
+
+    // Vérifier si l'ID est un ObjectId valide
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: 'ID utilisateur invalide' });
+    }
+
+    // Trouver l'utilisateur dans la base de données
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: 'Utilisateur non trouvé' });
@@ -336,12 +347,17 @@ const logoutUser = async (req, res) => {
     user.refreshToken = null;
     await user.save();
 
+    // Répondre avec un message de succès
     res.status(200).json({ message: 'Déconnexion réussie' });
   } catch (error) {
     console.error('Erreur lors de la déconnexion:', error);
-    res.status(500).json({ message: 'Erreur serveur', error: error.message });
+    res.status(500).json({
+      message: 'Erreur serveur',
+      error: error.message || 'Une erreur inconnue est survenue',
+    });
   }
 };
+
 
 module.exports = {
   registerUser,
