@@ -13,6 +13,7 @@
     "nodemailer": "^6.9.16"
   },
   "devDependencies": {
+    "@faker-js/faker": "^9.6.0",
     "nodemon": "^3.1.7"
   },
   "scripts": {

@@ -1,3 +1,4 @@
+# Ignorer tout le contenu du dossier .yarn sauf certaines sous-parties utiles
 .yarn/*
 !.yarn/patches
 !.yarn/plugins
@@ -5,13 +6,22 @@
 !.yarn/sdks
 !.yarn/versions
 
-# Swap the comments on the following lines if you wish to use zero-installs
-# In that case, don't forget to run `yarn config set enableGlobalCache false`!
-# Documentation here: https://yarnpkg.com/features/caching#zero-installs
+# Désactiver le cache global pour utiliser Zero-Installs (décommente la ligne suivante si nécessaire)
+# En cas d'utilisation de Zero-Installs, ne pas oublier de désactiver le cache global :
+# yarn config set enableGlobalCache false
+# Documentation : https://yarnpkg.com/features/caching#zero-installs
 
-#!.yarn/cache
+#!.yarn/cache  # Décommente cette ligne si tu utilises Zero-Installs
+
+# Ignorer les fichiers générés par Yarn PnP
 .pnp.*
+.pnp
+
+# Ignorer les fichiers d'environnement
 .env
 
-# Ignore the well-known directory and its content
+# Ignorer le dossier .well-known
 .well-known/
+
+# Ignorer node_modules
+node_modules/

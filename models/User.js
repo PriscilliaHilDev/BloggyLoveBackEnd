@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema(
     email: {
       type: String,
       required: [true, 'L\'adresse e-mail est requise.'],
-      unique: true,
+      unique: true,  // Cela crée un index unique automatiquement
       lowercase: true,
       trim: true,
       match: [
@@ -29,7 +29,7 @@ const userSchema = new mongoose.Schema(
     googleId: {
       type: String,
       required: false,
-      unique: true,
+      unique: true, // Cela crée un index unique automatiquement
       sparse: true, // Permet des valeurs nulles avec l'unicité
     },
     picture: {
@@ -66,9 +66,9 @@ userSchema.set('toJSON', {
   },
 });
 
-// Ajout d'index unique explicitement pour MongoDB
-userSchema.index({ email: 1 }, { unique: true });
-userSchema.index({ googleId: 1 }, { unique: true, sparse: true });
+// Pas besoin d'ajouter explicitement les index ici
+// userSchema.index({ email: 1 }, { unique: true });
+// userSchema.index({ googleId: 1 }, { unique: true, sparse: true });
 
 // Création du modèle basé sur le schéma
 const User = mongoose.model('User', userSchema);
