@@ -10,25 +10,28 @@ async function createFakePosts() {
   try {
     // Connexion à la base de données
     await connectDB();
- 
+
     // Créer un utilisateur fictif avec un mot de passe
     const user = await User.create({
       name: 'John Doe',
-      email: 'john.doe@example.com',
+      email: faker.internet.email(),
       password: 'password123'  // Ajoute un mot de passe ici
     });
 
     // Suppression des anciennes données
-    await Post.deleteMany({});
-    await Category.deleteMany({});
+    console.log('Suppression des anciennes publications...');
+    await Post.deleteMany({});  // Vide la table des posts
+    await Category.deleteMany({});  // Vide la table des catégories
 
     // Création de catégories factices
-    const categories = ['Amour', 'Aventure', 'Science-fiction', 'Horreur', 'Comédie'];
+    console.log('Création de catégories...');
+    const categories = ['Poème', 'Déclaration', 'Histoire'];
     const categoryDocs = await Category.insertMany(
       categories.map((name) => ({ name }))
     );
 
     // Génération et insertion de publications factices
+    console.log('Insertion des publications factices...');
     for (let i = 0; i < 10; i++) {
       const randomCategory =
         categoryDocs[Math.floor(Math.random() * categoryDocs.length)];

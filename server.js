@@ -3,6 +3,7 @@ const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const userRoutes = require('./routes/userRoutes');
 const loveTextRoutes = require('./routes/loveTextRoutes');
+const postRoutes = require('./routes/postRoutes');
 const cors = require('cors');
 
 // Charger les variables d'environnement
@@ -19,8 +20,8 @@ app.use(express.json());
 
 // Définir les routes pour l'API
 app.use('/api', userRoutes); // Ajouter /api devant toutes les routes utilisateur
-app.use('/api/love-texts', loveTextRoutes); // Ajouter /api devant toutes les routes utilisateur
-
+app.use('/api', loveTextRoutes); // Ajouter /api devant toutes les routes utilisateur
+app.use('/api', postRoutes);
 
 app.get('/', (req, res) => {
   res.send('API is running...');
