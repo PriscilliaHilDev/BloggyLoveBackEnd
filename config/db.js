@@ -9,15 +9,20 @@ const connectDB = async () => {
     process.exit(1);  
   }
 
-  try {
-    await mongoose.connect(process.env.MONGO_URI); // Connexion sans options supplémentaires
-    console.log("MongoDB connected successfully");
+   try {
+    const uri = process.env.MONGO_URI;
+    if (!uri) throw new Error('MONGO_URI manquant');
 
-    // Une fois connecté, récupère et affiche les utilisateurs
-    // await getUsers(); // Appeler la fonction pour obtenir et afficher les utilisateurs
-  } catch (error) {
-    console.error("Error connecting to MongoDB", error.message);
-    process.exit(1); // Quitte le processus si la connexion échoue
+    mongoose.set('strictQuery', true);
+
+    await mongoose.connect(uri, {
+      serverSelectionTimeoutMS: 8000, // évite d’attendre trop longtemps
+    });
+
+    console.log('MongoDB connecté ✅');
+  } catch (err) {
+    console.error('Erreur MongoDB ❌', err.message);
+    process.exit(1);
   }
 };
 

@@ -13,7 +13,7 @@ exports.getAllPosts = async (req, res) => {
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(parseInt(limit))
-      .exec();  // Assurez-vous d'utiliser .exec() si vous avez des problèmes de population
+      .exec();  
 
     // Vérifie la structure des posts après population
     console.log(posts);  // Cette ligne est cruciale pour voir si la population fonctionne bien

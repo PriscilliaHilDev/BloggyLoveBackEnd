@@ -1,0 +1,11 @@
+[{
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.bloggylove",
+      "sha256_cert_fingerprints": [
+        "75:2A:51:D9:BB:1B:32:AF:21:27:D2:AF:D5:E3:69:79:55:DF:9A:02:BA:1D:35:FB:32:C2:F6:B5:6F:2C:63:54"
+      ]
+    }
+  }]
+  
